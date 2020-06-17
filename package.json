@@ -1,0 +1,24 @@
+{
+  "name": "employee-manager",
+  "version": "1.0.0",
+  "description": "A application to track and add your employees as well as there salary and roll",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rtorres61595/Employee-Manager.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rtorres61595/Employee-Manager/issues"
+  },
+  "homepage": "https://github.com/rtorres61595/Employee-Manager#readme",
+  "dependencies": {
+    "inquirer": "^7.2.0",
+    "mysql": "^2.18.1"
+  }
+}
