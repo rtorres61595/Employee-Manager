@@ -1,5 +1,6 @@
-var mysql = require("mysql");
-var inquirer = require("inquirer");
+const mysql = require("mysql");
+const inquirer = require("inquirer");
+const DB = require("./db/index");
 
 var connection = mysql.createConnection({
   host: "localhost",
@@ -12,10 +13,10 @@ var connection = mysql.createConnection({
 
   // Your password
   password: "root",
-  database: "employee_DB;"
+  database: "employee_DB",
 });
 
-connection.connect(function(err) {
+connection.connect(function (err) {
   if (err) throw err;
   runSearch();
 });
@@ -27,105 +28,92 @@ function runSearch() {
       type: "rawlist",
       message: "What would you like to do?",
       choices: [
-        "Find songs by artist",
-        "Find all artists who appear more than once",
-        "Find data within a specific range",
-        "Search for a specific song",
-        "Find artists with a top song and top album in the same year"
-      ]
+        "View All Employees",
+        "View All Departments",
+        "View All Managers",
+        "View All Roles",
+        "Add Employee",
+        "Remove Employee",
+        "Update Employee Roll",
+        "Update Employee Manager",
+        "Add Roll",
+        "Remove Roll",
+        "Add Department",
+        "Quit",
+      ],
     })
-    .then(function(answer) {
+    .then(function (answer) {
       switch (answer.action) {
-      case "Find songs by artist":
-        artistSearch();
-        break;
+        case "View All Employees":
+          findAllEmployees();
+          break;
 
-      case "Find all artists who appear more than once":
-        multiSearch();
-        break;
+        case "View All Departments":
+          findAllDepartments();
+          break;
 
-      case "Find data within a specific range":
-        rangeSearch();
-        break;
+        case "View All Managers":
+          findAllmanagers();
+          break;
 
-      case "Search for a specific song":
-        songSearch();
-        break;
+        case "View All Roles":
+          findAllroles();
+          break;
 
-      case "Find artists with a top song and top album in the same year":
-        songAndAlbumSearch();
-        break;
+        case "Add Employee":
+          AddEmployee();
+          break;
+
+        case "Remove Employee":
+          RemoveEmployee();
+          break;
+
+        case "Update Employee Roll":
+          UpdateEmployeeRoll();
+          break;
+
+        case "Update Employee Manager":
+          UpdateEmployeeManager();
+          break;
+        case "Add Roll":
+          AddRoll();
+          break;
+        case "Remove Roll":
+          RemoveRoll();
+          break;
+        case "Add Department":
+          AddDepartment();
+          break;
+
+        case "Quit":
+          Quit();
+          break;  
       }
     });
 }
 
-function artistSearch() {
+function findAllEmployees() {
   inquirer
     .prompt({
-      name: "artist",
-      type: "input",
-      message: "What artist would you like to search for?"
+      name: "employee",
+      type: "list",
+      message: "view all employees by ",
+      choices: ["Name", "Manager id", "Role id"],
     })
-    .then(function(answer) {
-      var query = "SELECT position, song, year FROM top5000 WHERE ?";
-      connection.query(query, { artist: answer.artist }, function(err, res) {
-        for (var i = 0; i < res.length; i++) {
-          console.log("Position: " + res[i].position + " || Song: " + res[i].song + " || Year: " + res[i].year);
-        }
-        runSearch();
-      });
-    });
-}
-
-function multiSearch() {
-  var query = "SELECT artist FROM top5000 GROUP BY artist HAVING count(*) > 1";
-  connection.query(query, function(err, res) {
-    for (var i = 0; i < res.length; i++) {
-      console.log(res[i].artist);
-    }
-    runSearch();
-  });
-}
-
-function rangeSearch() {
-  inquirer
-    .prompt([
-      {
-        name: "start",
-        type: "input",
-        message: "Enter starting position: ",
-        validate: function(value) {
-          if (isNaN(value) === false) {
-            return true;
-          }
-          return false;
-        }
-      },
-      {
-        name: "end",
-        type: "input",
-        message: "Enter ending position: ",
-        validate: function(value) {
-          if (isNaN(value) === false) {
-            return true;
-          }
-          return false;
-        }
-      }
-    ])
-    .then(function(answer) {
-      var query = "SELECT position,song,artist,year FROM top5000 WHERE position BETWEEN ? AND ?";
-      connection.query(query, [answer.start, answer.end], function(err, res) {
-        for (var i = 0; i < res.length; i++) {
+    .then(function (answer) {
+      const query =
+        "SELECT first_name, last_name, role_id, manager_id FROM employee WHERE ?";
+      connection.query(query, { employee: answer.employee }, function (err,res) {
+        for (const i = 0; i < res.length; i++) {
           console.log(
-            "Position: " +
-              res[i].position +
-              " || Song: " +
-              res[i].song +
-              " || Artist: " +
-              res[i].artist +
-              " || Year: " +
-              res[i].year
+            "Name: " +
+              res[i].first_name +
+              " || Last Name: " +
+              res[i].last_name +
+              " ||  Role: " +
+              res[i].role_id +
+              " || Manager: " +
+              res[i].manager_id
           );
         }
         runSearch();
@@ -133,62 +121,161 @@ function rangeSearch() {
     });
 }
 
-function songSearch() {
+function findAllDepartments() {
   inquirer
     .prompt({
-      name: "song",
-      type: "input",
-      message: "What song would you like to look for?"
+      name: "department",
+      type: "list",
+      message: "view all Departments by ",
+      choices: ["Name"]
     })
-    .then(function(answer) {
-      console.log(answer.song);
-      connection.query("SELECT * FROM top5000 WHERE ?", { song: answer.song }, function(err, res) {
-        console.log(
-          "Position: " +
-            res[0].position +
-            " || Song: " +
-            res[0].song +
-            " || Artist: " +
-            res[0].artist +
-            " || Year: " +
-            res[0].year
-        );
-        runSearch();
-      });
-    });
-}
-
-function songAndAlbumSearch() {
-  inquirer
-    .prompt({
-      name: "artist",
-      type: "input",
-      message: "What artist would you like to search for?"
-    })
-    .then(function(answer) {
-      var query = "SELECT top_albums.year, top_albums.album, top_albums.position, top5000.song, top5000.artist ";
-      query += "FROM top_albums INNER JOIN top5000 ON (top_albums.artist = top5000.artist AND top_albums.year ";
-      query += "= top5000.year) WHERE (top_albums.artist = ? AND top5000.artist = ?) ORDER BY top_albums.year, top_albums.position";
-
-      connection.query(query, [answer.artist, answer.artist], function(err, res) {
-        console.log(res.length + " matches found!");
-        for (var i = 0; i < res.length; i++) {
+    .then(function (answer) {
+      const query =
+        "SELECT name, FROM department WHERE ?";
+      connection.query(query, { department: answer.department }, function (err,res) {
+        for (const i = 0; i < res.length; i++) {
           console.log(
-            i+1 + ".) " +
-              "Year: " +
-              res[i].year +
-              " Album Position: " +
-              res[i].position +
-              " || Artist: " +
-              res[i].artist +
-              " || Song: " +
-              res[i].song +
-              " || Album: " +
-              res[i].album
+            "Name: " + res[i].name  
           );
         }
-
         runSearch();
       });
     });
 }
+
+function findAllmanagers() {
+  inquirer
+    .prompt({
+      name: "manager",
+      type: "list",
+      message: "view all employees by ",
+      choices: ["Name", "Manager id"]
+    })
+    .then(function (answer) {
+      const query =
+        "SELECT first_name, last_name, role_id, manager_id FROM employee WHERE ?";
+      connection.query(query, { employee: answer.employee }, function (err,res) {
+        for (const i = 0; i < res.length; i++) {
+          console.log(
+            "Name: " +
+              res[i].first_name +
+              " || Last Name: " +
+              res[i].last_name +
+              " ||  Role: " +
+              res[i].role_id +
+              " || Manager: " +
+              res[i].manager_id
+          );
+        }
+        runSearch();
+      });
+    });
+}
+  
+
+
+function findAllroles() {
+  inquirer
+    .prompt({
+      name: "role",
+      type: "list",
+      message: "view all roles by ",
+      choices: ["Title", "Salary", "Department id"],
+    })
+    .then(function (answer) {
+      const query =
+        "SELECT title, salary, department_id, FROM role WHERE ?";
+      connection.query(query, { employee: answer.employee }, function (err,res) {
+        for (const i = 0; i < res.length; i++) {
+          console.log(
+            "Title: " +
+              res[i].title +
+              " || Salary: " +
+              res[i].salary +
+              " ||  Department id: " +
+              res[i].department_id 
+          );
+        }
+        runSearch();
+      });
+    });
+}
+
+function UpdateEmployeeRoll() {
+  inquirer
+    .prompt({
+     
+  })
+     runSearch();
+  
+}
+
+function AddEmployee() {
+  inquirer
+    .prompt({
+     
+  })
+     runSearch();
+  
+}
+
+function RemoveEmployee() {
+  inquirer
+    .prompt({
+     
+  })
+     runSearch();
+  
+}
+
+function UpdateEmployeeManager() {
+  inquirer
+    .prompt({
+     
+  })
+     runSearch();
+  
+}
+
+function AddRoll() {
+  inquirer
+    .prompt({
+     
+  })
+     runSearch();
+  
+}
+
+function RemoveRoll() {
+  inquirer
+    .prompt({
+     
+  })
+     runSearch();
+  
+}
+
+function Quit() {
+  inquirer
+    .prompt({
+     
+  })
+     runSearch();
+  
+}
+
+
+// view all employyes
+// view all employyees by department
+// view all employees by managor id
+// add employee
+
+// remove employee
+// updated employee roll
+// update employee managor
+// view all rolls
+// add roll
+// remove roll
+// view all departments
+// add department
+// quit

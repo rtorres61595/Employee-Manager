@@ -5,8 +5,8 @@ USE employee_DB;
 
 CREATE TABLE department (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(30) NOT NULL
-
+  name VARCHAR(30) NOT NULL,
+  budget INT(1000000) NOT NULL
 );
 
 CREATE TABLE role (

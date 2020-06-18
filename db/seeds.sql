@@ -1,6 +1,11 @@
 USE employee_DB;
 INSERT INTO department(name) VALUES("accounting");
 INSERT INTO department(name) VALUES("engineering");
+INSERT INTO department(name) VALUES("fiance");
+ INSERT INTO department(name) VALUES("legal");
+
+
+
 
 INSERT INTO role(title, salary, department_id) VALUES("software developer", 80000, 1);
 INSERT INTO role(title, salary, department_id) VALUES("lead developer", 100000, 2);
