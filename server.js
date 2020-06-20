@@ -1,8 +1,8 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
-const DB = require("./db/index");
+const DB = require("./db");
 
-var connection = mysql.createConnection({
+const connection = mysql.createConnection({
   host: "localhost",
 
   // Your port; if not 3306
@@ -202,22 +202,102 @@ function findAllroles() {
 }
 
 function UpdateEmployeeRoll() {
-  inquirer
-    .prompt({
-     
-  })
-     runSearch();
-  
+  connection.query("SELECT * FROM employee", function(err, results) {
+    if (err) throw err;
+    // once you have the items, prompt the user for which they'd like to newRoll on
+    inquirer
+      .prompt([
+        {
+          name: "choice",
+          type: "rawlist",
+          choices: function() {
+            var employeeArray = [];
+            for (var i = 0; i < results.length; i++) {
+              employeeArray.push(results[i].first_name,last_name);
+            }
+            return employeeArray;
+          },
+          message: "What would you like to do?"
+        },
+        {
+          name: "newRole",
+          type: "input",
+          message: "what new role will this employee have?"
+        }
+      ])
+      .then(function(answer) {
+        // get the information of the chosen item
+        var updatedEmployee;
+        for (var i = 0; i < results.length; i++) {
+          if (results[i].first_name.last_name === answer.choice) {
+            updatedEmployee = results[i];
+          }
+        }
+
+        // determine if newRoll was high enough
+        if (updatedEmployee,first_name,last_name === parseInt(answer.newRole)) {
+          // newRoll was high enough, so update db, let the user know, and runSearch over
+          connection.query(
+            "UPDATE auctions SET ? WHERE ?",
+            [
+              {
+                id: updatedEmployee,first_name,last_name
+              }
+            ],
+            function(error) {
+              if (error) throw err;
+              console.log("newRoll placed successfully!");
+              runSearch();
+            }
+          );
+        }
+      });
+  });
 }
 
-function AddEmployee() {
-  inquirer
-    .prompt({
-     
-  })
-     runSearch();
+ 
+  function AddEmployee() {
+    // prompt for info about the Employee being put up for auction
+    inquirer
+      .prompt([
+        {
+          name: "employee",
+          type: "input",
+          message: "What is the Employee name?"
+        },
+        {
+          name: "employeeLastname",
+          type: "input",
+          message: "What is the Employee last name?"
+        },
+        {
+          name: "roll",
+          type: "input",
+          message: "What is the employee roll id?"
+          
+        },
+         
+      ])
+      .then(function(answer) {
+        // when finished prompting, insert a new Employee into the db with that info
+        connection.query(
+          "INSERT INTO employee SET ?",
+          {
+            first_name: answer.employee,
+            last_name: answer.employeeLastname,
+            role_id: answer.roll,
+          },
+          function(err) {
+            if (err) throw err;
+            console.log("employee made!");
+            runSearch();
+          }
+        );
+      });
+  }
+    
   
-}
+
 
 function RemoveEmployee() {
   inquirer
@@ -238,12 +318,43 @@ function UpdateEmployeeManager() {
 }
 
 function AddRoll() {
+  // prompt for info about the Employee being put up for auction
   inquirer
-    .prompt({
+  .prompt([
+    {
+      name: "title",
+      type: "input",
+      message: "What is the title role?"
+    },
+    {
+      name: "salary",
+      type: "input",
+      message: "what is the salary for the role?"
+    },
+    {
+      name: "department",
+      type: "input",
+      message: "What is the department id?"
+      
+    },
      
-  })
-     runSearch();
-  
+  ])
+  .then(function(answer) {
+    // when finished prompting, insert a new Employee into the db with that info
+    connection.query(
+      "INSERT INTO role SET ?",
+      {
+        title: answer.title,
+        salary: answer.salary,
+        department_id: answer.department,
+      },
+      function(err) {
+        if (err) throw err;
+        console.log("role made!");
+        runSearch();
+      }
+    );
+  });
 }
 
 function RemoveRoll() {
