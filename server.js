@@ -25,7 +25,7 @@ function runSearch() {
   inquirer
     .prompt({
       name: "action",
-      type: "rawlist",
+      type: "list",
       message: "What would you like to do?",
       choices: [
         "View All Employees",
@@ -43,210 +43,128 @@ function runSearch() {
       ],
     })
     .then(function (answer) {
-      switch (answer.action) {
-        case "View All Employees":
+      console.log(answer.action)
+       switch (answer.action) {
+         case "View All Employees":
           findAllEmployees();
-          break;
+           break;
 
-        case "View All Departments":
-          findAllDepartments();
-          break;
+         case "View All Departments":
+           findAllDepartments();
+           break;
 
-        case "View All Managers":
-          findAllmanagers();
-          break;
+       
+         case "View All Roles":
+           findAllroles();
+           break;
 
-        case "View All Roles":
-          findAllroles();
-          break;
+         case "Add Employee":
+           AddEmployee();
+           break;
 
-        case "Add Employee":
-          AddEmployee();
-          break;
+        
+         case "Update Employee Roll":
+          UpdateRole();
+           break;
 
-        case "Remove Employee":
-          RemoveEmployee();
-          break;
+        
+         case "Add Roll":
+           AddRoll();
+           break;
+        
+         case "Add Department":
+           AddDepartment();
+           break;
 
-        case "Update Employee Roll":
-          UpdateEmployeeRoll();
-          break;
-
-        case "Update Employee Manager":
-          UpdateEmployeeManager();
-          break;
-        case "Add Roll":
-          AddRoll();
-          break;
-        case "Remove Roll":
-          RemoveRoll();
-          break;
-        case "Add Department":
-          AddDepartment();
-          break;
-
-        case "Quit":
-          Quit();
-          break;  
-      }
+       
+       }
     });
 }
 
-function findAllEmployees() {
-  inquirer
-    .prompt({
-      name: "employee",
-      type: "list",
-      message: "view all employees by ",
-      choices: ["Name", "Manager id", "Role id"],
+
+  function findAllEmployees() {
+    connection.query("SELECT * FROM employee ",
+    
+    function(err, result) {
+      if (err) throw err;
+      console.table(result)
+      // console.log("SELECT * FROM employee ");
+      runSearch();
     })
-    .then(function (answer) {
-      const query =
-        "SELECT first_name, last_name, role_id, manager_id FROM employee WHERE ?";
-      connection.query(query, { employee: answer.employee }, function (err,res) {
-        for (const i = 0; i < res.length; i++) {
-          console.log(
-            "Name: " +
-              res[i].first_name +
-              " || Last Name: " +
-              res[i].last_name +
-              " ||  Role: " +
-              res[i].role_id +
-              " || Manager: " +
-              res[i].manager_id
-          );
-        }
-        runSearch();
-      });
-    });
-}
+  }
+
 
 function findAllDepartments() {
-  inquirer
-    .prompt({
-      name: "department",
-      type: "list",
-      message: "view all Departments by ",
-      choices: ["Name"]
-    })
-    .then(function (answer) {
-      const query =
-        "SELECT name, FROM department WHERE ?";
-      connection.query(query, { department: answer.department }, function (err,res) {
-        for (const i = 0; i < res.length; i++) {
-          console.log(
-            "Name: " + res[i].name  
-          );
-        }
-        runSearch();
-      });
-    });
+  connection.query("SELECT * FROM department ",
+    
+  function(err, result) {
+    if (err) throw err;
+    console.table(result)
+    // console.log("SELECT * FROM employee ");
+    runSearch();
+  })
 }
 
-function findAllmanagers() {
-  inquirer
-    .prompt({
-      name: "manager",
-      type: "list",
-      message: "view all employees by ",
-      choices: ["Name", "Manager id"]
-    })
-    .then(function (answer) {
-      const query =
-        "SELECT first_name, last_name, role_id, manager_id FROM employee WHERE ?";
-      connection.query(query, { employee: answer.employee }, function (err,res) {
-        for (const i = 0; i < res.length; i++) {
-          console.log(
-            "Name: " +
-              res[i].first_name +
-              " || Last Name: " +
-              res[i].last_name +
-              " ||  Role: " +
-              res[i].role_id +
-              " || Manager: " +
-              res[i].manager_id
-          );
-        }
-        runSearch();
-      });
-    });
-}
-  
 
 
 function findAllroles() {
-  inquirer
-    .prompt({
-      name: "role",
-      type: "list",
-      message: "view all roles by ",
-      choices: ["Title", "Salary", "Department id"],
-    })
-    .then(function (answer) {
-      const query =
-        "SELECT title, salary, department_id, FROM role WHERE ?";
-      connection.query(query, { employee: answer.employee }, function (err,res) {
-        for (const i = 0; i < res.length; i++) {
-          console.log(
-            "Title: " +
-              res[i].title +
-              " || Salary: " +
-              res[i].salary +
-              " ||  Department id: " +
-              res[i].department_id 
-          );
-        }
-        runSearch();
-      });
-    });
+  connection.query("SELECT * FROM role ",
+    
+  function(err, result) {
+    if (err) throw err;
+    console.table(result)
+    // console.log("SELECT * FROM employee ");
+    runSearch();
+  })
 }
 
-function UpdateEmployeeRoll() {
-  connection.query("SELECT * FROM employee", function(err, results) {
+function UpdateRole() {
+  connection.query("SELECT * FROM role", function(err, results) {
     if (err) throw err;
-    // once you have the items, prompt the user for which they'd like to newRoll on
+    const roleArray = [];
+    for (var i = 0; i < results.length; i++) {
+      roleArray.push(results[i].first_name + ' ' + last_name);
+    }
     inquirer
       .prompt([
         {
           name: "choice",
           type: "rawlist",
-          choices: function() {
-            var employeeArray = [];
-            for (var i = 0; i < results.length; i++) {
-              employeeArray.push(results[i].first_name,last_name);
-            }
-            return employeeArray;
-          },
-          message: "What would you like to do?"
+          choices: roleArray,
+          message: "What role would you like to update?"
         },
         {
-          name: "newRole",
+          name: "field",
+          type: "list",
+          choices: ["title", "salary", "department id"],
+          message: "what field will you like to update?"
+        },
+        {
+          name: "value",
           type: "input",
-          message: "what new role will this employee have?"
+          message: "what is the new field value"
+          
         }
+        
       ])
       .then(function(answer) {
-        // get the information of the chosen item
-        var updatedEmployee;
         for (var i = 0; i < results.length; i++) {
-          if (results[i].first_name.last_name === answer.choice) {
-            updatedEmployee = results[i];
-          }
+          
         }
-
+          roleArray.push(results[i].first_name + ' ' + last_name);
         // determine if newRoll was high enough
-        if (updatedEmployee,first_name,last_name === parseInt(answer.newRole)) {
+        if (updateRole,first_name,last_name === parseInt(answer.field)) {
           // newRoll was high enough, so update db, let the user know, and runSearch over
           connection.query(
-            "UPDATE auctions SET ? WHERE ?",
+            "UPDATE employee SET ? WHERE ?",
             [
               {
-                id: updatedEmployee,first_name,last_name
+                id: updateRole,first_name,last_name
               }
             ],
             function(error) {
               if (error) throw err;
-              console.log("newRoll placed successfully!");
+              console.log("field placed successfully!");
               runSearch();
             }
           );
@@ -299,23 +217,7 @@ function UpdateEmployeeRoll() {
   
 
 
-function RemoveEmployee() {
-  inquirer
-    .prompt({
-     
-  })
-     runSearch();
-  
-}
 
-function UpdateEmployeeManager() {
-  inquirer
-    .prompt({
-     
-  })
-     runSearch();
-  
-}
 
 function AddRoll() {
   // prompt for info about the Employee being put up for auction
@@ -357,23 +259,6 @@ function AddRoll() {
   });
 }
 
-function RemoveRoll() {
-  inquirer
-    .prompt({
-     
-  })
-     runSearch();
-  
-}
-
-function Quit() {
-  inquirer
-    .prompt({
-     
-  })
-     runSearch();
-  
-}
 
 
 // view all employyes
