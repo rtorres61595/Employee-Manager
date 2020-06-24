@@ -119,11 +119,12 @@ function findAllroles() {
 }
 
 function UpdateRole() {
-  connection.query("SELECT * FROM role", function(err, results) {
+  connection.query("SELECT * FROM role INNER JOIN department ON role.department_id = department.id ", function(err, results) {
     if (err) throw err;
+    console.log(results)
     const roleArray = [];
     for (var i = 0; i < results.length; i++) {
-      roleArray.push(results[i].first_name + ' ' + last_name);
+      roleArray.push(results[i].title + '-' + results[i].salary + '-' + results[i].name);
     }
     inquirer
       .prompt([
@@ -136,7 +137,7 @@ function UpdateRole() {
         {
           name: "field",
           type: "list",
-          choices: ["title", "salary", "department id"],
+          choices: ["title", "salary"],
           message: "what field will you like to update?"
         },
         {
@@ -145,30 +146,23 @@ function UpdateRole() {
           message: "what is the new field value"
           
         }
-        
       ])
       .then(function(answer) {
+        let roleId 
         for (var i = 0; i < results.length; i++) {
-          
+          if(answer.choice.split('-')[0] === results[i].title) roleId = results[i].id 
         }
-          roleArray.push(results[i].first_name + ' ' + last_name);
-        // determine if newRoll was high enough
-        if (updateRole,first_name,last_name === parseInt(answer.field)) {
-          // newRoll was high enough, so update db, let the user know, and runSearch over
-          connection.query(
-            "UPDATE employee SET ? WHERE ?",
-            [
-              {
-                id: updateRole,first_name,last_name
-              }
-            ],
-            function(error) {
-              if (error) throw err;
-              console.log("field placed successfully!");
-              runSearch();
-            }
-          );
-        }
+        connection.query(
+          "UPDATE role SET ?? = ? WHERE id = ?",
+          [
+            answer.field, answer.value, roleId
+          ],
+          function(error) {
+            if (error) throw err;
+            console.log(answer.field + " changed to " + answer.value);
+            runSearch();
+          }
+        );
       });
   });
 }
